@@ -2,6 +2,10 @@
 
 Yet another HTTP Client in go with very simple yet essential features
 
+<img width="638" alt="Screenshot 2025-02-09 at 1 10 52 PM" src="https://github.com/user-attachments/assets/cb016287-0016-4de8-800f-84eb890de9ca" />
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/rag594/rustic.svg)](https://pkg.go.dev/github.com/rag594/rustic)
+
 Features:
 - [x] http client with type safety
 - [x] Different http configurations support
