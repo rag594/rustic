@@ -7,7 +7,9 @@ Features:
 - [x] Different http configurations support
 - [x] Configure timeouts, circuitBreaker etc
 - [x] supports open telemetry, currently with stdOut exporter(can be changed to http exported in order to collect with any telemetry backend)
-- [ ] Add metrics either via open telemetry or prometheus metrics 
+- [ ] Add metrics either via open telemetry or prometheus metrics
+
+> **_NOTE:_**  For circuit breaker https://github.com/sony/gobreaker is used.
 
 ### Usage
 
