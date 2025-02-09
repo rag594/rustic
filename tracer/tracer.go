@@ -2,7 +2,9 @@ package tracer
 
 import (
 	"context"
+	"fmt"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	stdoutTrace "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -12,24 +14,36 @@ import (
 	"log"
 )
 
-func InitTracer(serviceName string) func() {
-	// Create an OTLP exporter (send data to OpenTelemetry collector)
-	_, err := otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure(), otlptracehttp.WithEndpoint("localhost:4317"))
-	if err != nil {
-		log.Fatalf("failed to create exporter: %v", err)
-	}
-
-	// Current using stdOut exporter
+// StdOutExporter outputs the traces to the stdout
+func StdOutExporter() *stdoutTrace.Exporter {
+	// Currently using stdOut exporter
 	stdOutExporter, err := stdoutTrace.New(stdoutTrace.WithPrettyPrint())
 	if err != nil {
 		log.Fatalf("failed to create exporter: %v", err)
 	}
 
+	return stdOutExporter
+}
+
+// OTLPExporter Uses OpenTelemetry’s standard OTLP/gRPC or HTTP with host/port
+func OTLPExporter(host, port string) *otlptrace.Exporter {
+	// Create an OTLP exporter (send data to OpenTelemetry collector)
+	oltpExporter, err := otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure(), otlptracehttp.WithEndpoint(fmt.Sprintf("%s:%s", host, port)))
+	if err != nil {
+		log.Fatalf("failed to create exporter: %v", err)
+	}
+
+	return oltpExporter
+}
+
+// InitTracer initialises the otel tracer for a serviceName and env with exporter of choice
+func InitTracer(serviceName, env string, exporter trace.SpanExporter) func() {
 	tp := trace.NewTracerProvider(
-		trace.WithBatcher(stdOutExporter),
+		trace.WithBatcher(exporter),
 		trace.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(serviceName),
+			semconv.DeploymentEnvironmentNameKey.String(env),
 		)),
 	)
 
@@ -43,6 +57,7 @@ func InitTracer(serviceName string) func() {
 	}
 }
 
+// GetTracer returns the global tracer initialised for the serviceName
 func GetTracer(serviceName string) otelTracer.Tracer {
 	return otel.Tracer(serviceName)
 }

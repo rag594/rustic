@@ -23,7 +23,7 @@ type UserPostResp struct {
 }
 
 func main() {
-	shutdown := tracer.InitTracer("microserviceA")
+	shutdown := tracer.InitTracer("microserviceA", "dev", tracer.StdOutExporter())
 	defer shutdown()
 
 	client := httpClient.NewHTTPClient(httpClient.WithTraceEnabled(true))
