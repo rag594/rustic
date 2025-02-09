@@ -1,4 +1,4 @@
-package httpClient
+package rustic
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/rag594/rustic/httpClient"
 	"github.com/rag594/rustic/tracer"
 	"github.com/sony/gobreaker/v2"
 	otelTracer "go.opentelemetry.io/otel/trace"
@@ -21,7 +22,7 @@ import (
 
 // HTTPConfig different http configurations
 type HTTPConfig struct {
-	HttpClient          *HTTPClient
+	HttpClient          *httpClient.HTTPClient
 	Timeout             time.Duration
 	Headers             http.Header
 	QueryParams         netUrl.Values
@@ -32,7 +33,7 @@ type HTTPConfig struct {
 
 type HTTPConfigOptions func(*HTTPConfig)
 
-func WithHttpClient(c *HTTPClient) HTTPConfigOptions {
+func WithHttpClient(c *httpClient.HTTPClient) HTTPConfigOptions {
 	return func(p *HTTPConfig) {
 		p.HttpClient = c
 	}
@@ -115,7 +116,7 @@ func GET[Res any](ctx context.Context, url string, opts ...HTTPConfigOptions) (*
 	// if trace is enabled start trace using new context
 	if getOpts.HttpClient.TraceEnabled {
 		tr := tracer.GetTracer(getOpts.HttpClient.ServiceName)
-		newCtx, span = tr.Start(newCtx, GetCallerFunctionName())
+		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
 
@@ -150,7 +151,7 @@ func GET[Res any](ctx context.Context, url string, opts ...HTTPConfigOptions) (*
 			body, _ := io.ReadAll(resp.Body)
 			defer resp.Body.Close()
 
-			return nil, &HTTPError{StatusCode: resp.StatusCode, Status: http.StatusText(resp.StatusCode), Body: string(body)}
+			return nil, &httpClient.HTTPError{StatusCode: resp.StatusCode, Status: http.StatusText(resp.StatusCode), Body: string(body)}
 		})
 		if response != nil {
 			return response.(*Res), err
@@ -173,7 +174,7 @@ func GET[Res any](ctx context.Context, url string, opts ...HTTPConfigOptions) (*
 	body, _ := io.ReadAll(response.Body)
 	defer response.Body.Close()
 
-	return nil, &HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(body)}
+	return nil, &httpClient.HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(body)}
 
 }
 
@@ -218,7 +219,7 @@ func POST[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPC
 	// if trace is enabled start trace using new context
 	if postOpts.HttpClient.TraceEnabled {
 		tr := tracer.GetTracer(postOpts.HttpClient.ServiceName)
-		newCtx, span = tr.Start(newCtx, GetCallerFunctionName())
+		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
 
@@ -246,7 +247,7 @@ func POST[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPC
 			body, _ := io.ReadAll(resp.Body)
 			defer resp.Body.Close()
 
-			return nil, &HTTPError{StatusCode: resp.StatusCode, Status: http.StatusText(resp.StatusCode), Body: string(body)}
+			return nil, &httpClient.HTTPError{StatusCode: resp.StatusCode, Status: http.StatusText(resp.StatusCode), Body: string(body)}
 		})
 		if response != nil {
 			return response.(*Res), err
@@ -270,7 +271,7 @@ func POST[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPC
 	// Read response body
 	body, _ := io.ReadAll(response.Body)
 
-	return nil, &HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(body)}
+	return nil, &httpClient.HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(body)}
 }
 
 // PUT http method with Req as request type and Res as response type
@@ -314,7 +315,7 @@ func PUT[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPCo
 	// if trace is enabled start trace using new context
 	if putOpts.HttpClient.TraceEnabled {
 		tr := tracer.GetTracer(putOpts.HttpClient.ServiceName)
-		newCtx, span = tr.Start(newCtx, GetCallerFunctionName())
+		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
 
@@ -342,7 +343,7 @@ func PUT[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPCo
 	// Read response body
 	body, _ := io.ReadAll(response.Body)
 
-	return nil, &HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(body)}
+	return nil, &httpClient.HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(body)}
 }
 
 // POSTFormData with Res as response type and allows application/x-www-form-urlencoded -> formData
@@ -386,7 +387,7 @@ func POSTFormData[Res any](ctx context.Context, url string, opts ...HTTPConfigOp
 	// if trace is enabled start trace using new context
 	if postOpts.HttpClient.TraceEnabled {
 		tr := tracer.GetTracer(postOpts.HttpClient.ServiceName)
-		newCtx, span = tr.Start(newCtx, GetCallerFunctionName())
+		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
 
@@ -412,7 +413,7 @@ func POSTFormData[Res any](ctx context.Context, url string, opts ...HTTPConfigOp
 	// Read response body
 	body, _ := io.ReadAll(response.Body)
 
-	return nil, &HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(body)}
+	return nil, &httpClient.HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(body)}
 }
 
 // POSTMultiPartFormData with Res as response type, map of files with key as fieldName and value as filePath
@@ -454,7 +455,7 @@ func POSTMultiPartFormData[Res any](ctx context.Context, url string, files map[s
 	// if trace is enabled start trace using new context
 	if postOpts.HttpClient.TraceEnabled {
 		tr := tracer.GetTracer(postOpts.HttpClient.ServiceName)
-		newCtx, span = tr.Start(newCtx, GetCallerFunctionName())
+		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
 
@@ -511,5 +512,5 @@ func POSTMultiPartFormData[Res any](ctx context.Context, url string, files map[s
 	// Read response body
 	resBody, _ := io.ReadAll(response.Body)
 
-	return nil, &HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(resBody)}
+	return nil, &httpClient.HTTPError{StatusCode: response.StatusCode, Status: http.StatusText(response.StatusCode), Body: string(resBody)}
 }

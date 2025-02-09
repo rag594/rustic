@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/rag594/rustic"
 	"github.com/rag594/rustic/httpClient"
 	"github.com/rag594/rustic/tracer"
 	"time"
@@ -31,11 +32,11 @@ func main() {
 
 	userPutReq := &UserPutReq{Title: "foo", Body: "bar", UserId: 1, Id: 1}
 
-	post, err := httpClient.PUT[UserPutReq, UserPutResp](context.Background(),
+	post, err := rustic.PUT[UserPutReq, UserPutResp](context.Background(),
 		url,
 		userPutReq,
-		httpClient.WithHttpClient(client),
-		httpClient.WithTimeout(time.Duration(1)*time.Minute),
+		rustic.WithHttpClient(client),
+		rustic.WithTimeout(time.Duration(1)*time.Minute),
 	)
 	if err != nil {
 		fmt.Println(err)

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/rag594/rustic"
 	"github.com/rag594/rustic/httpClient"
 	"github.com/rag594/rustic/tracer"
 	"github.com/sony/gobreaker/v2"
@@ -40,12 +41,12 @@ func main() {
 	cb := gobreaker.NewCircuitBreaker[any](*st)
 
 	for i := 0; i < 10; i++ {
-		post, err := httpClient.GET[[]UserPost](context.Background(),
+		post, err := rustic.GET[[]UserPost](context.Background(),
 			url,
-			httpClient.WithQueryParams(params),
-			httpClient.WithHttpClient(client),
-			httpClient.WithTimeout(time.Duration(1)*time.Second),
-			httpClient.WithCircuitBreaker(cb),
+			rustic.WithQueryParams(params),
+			rustic.WithHttpClient(client),
+			rustic.WithTimeout(time.Duration(1)*time.Second),
+			rustic.WithCircuitBreaker(cb),
 		)
 		if err != nil {
 			fmt.Println(err)
