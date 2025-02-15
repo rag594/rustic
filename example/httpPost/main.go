@@ -5,18 +5,17 @@ import (
 	"fmt"
 	"github.com/rag594/rustic"
 	"github.com/rag594/rustic/httpClient"
-	"github.com/rag594/rustic/tracer"
+	"github.com/rag594/rustic/rusticTracer"
 	"time"
 )
 
-type UserPutReq struct {
-	Id     int    `json:"id"`
+type UserPostReq struct {
 	UserId int    `json:"userId"`
 	Title  string `json:"title"`
 	Body   string `json:"body"`
 }
 
-type UserPutResp struct {
+type UserPostResp struct {
 	Id     int    `json:"id"`
 	UserId int    `json:"userId"`
 	Title  string `json:"title"`
@@ -24,17 +23,18 @@ type UserPutResp struct {
 }
 
 func main() {
-	shutdown := tracer.InitTracer("microserviceA", "dev", tracer.StdOutExporter())
+	shutdown := rusticTracer.InitTracer("microserviceA", "dev", rusticTracer.StdOutExporter())
 	defer shutdown()
 
 	client := httpClient.NewHTTPClient(httpClient.WithTraceEnabled(true))
-	url := "https://jsonplaceholder.typicode.com/posts/1"
 
-	userPutReq := &UserPutReq{Title: "foo", Body: "bar", UserId: 1, Id: 1}
+	url := "https://jsonplaceholder.typicode.com/posts"
 
-	post, err := rustic.PUT[UserPutReq, UserPutResp](context.Background(),
+	userPostReq := &UserPostReq{Title: "foo", Body: "bar", UserId: 1}
+
+	post, err := rustic.POST[UserPostReq, UserPostResp](context.Background(),
 		url,
-		userPutReq,
+		userPostReq,
 		rustic.WithHttpClient(client),
 		rustic.WithTimeout(time.Duration(1)*time.Minute),
 	)

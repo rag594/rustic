@@ -32,7 +32,7 @@ func NewHTTPClient(opt ...HTTPClientOption) *HTTPClient {
 	}
 
 	if httpClient.TraceEnabled {
-		httpClient.Client.Transport = otelhttp.NewTransport(http.DefaultTransport.(*http.Transport))
+		httpClient.Client.Transport = otelhttp.NewTransport(http.DefaultTransport)
 	} else {
 		httpClient.Client.Transport = http.DefaultTransport.(*http.Transport)
 	}

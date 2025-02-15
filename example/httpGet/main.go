@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/rag594/rustic"
 	"github.com/rag594/rustic/httpClient"
-	"github.com/rag594/rustic/tracer"
+	"github.com/rag594/rustic/rusticTracer"
 	"github.com/sony/gobreaker/v2"
 	url2 "net/url"
 	"time"
@@ -20,7 +20,7 @@ type UserPost struct {
 
 func main() {
 
-	shutdown := tracer.InitTracer("microserviceA", "dev", tracer.StdOutExporter())
+	shutdown := rusticTracer.InitTracer("microserviceA", "dev", rusticTracer.StdOutExporter())
 	defer shutdown()
 
 	// With Circuit breaker

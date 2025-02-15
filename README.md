@@ -71,6 +71,21 @@ post, err := rustic.GET[[]UserPost](context.Background(),
     fmt.Println(post)
 ```
 
+##### Using with Echo Framework
+
+Initialise the trace with service name, environment and exporter()below is an OTLP exporter with configured telemetry backend. That's it, you have configured the traces
+```go
+// you can try out with tracer.StdOutExporter() in your localhost
+	shutdown := rusticTracer.InitTracer("userService", "dev", rusticTracer.OTLPExporter("localhost", "4318"))
+
+	defer shutdown()
+	e.Use(rusticTracer.Echov4TracerMiddleware("userService"))
+```
+You can run the sample under `example/echoTraceMiddleware` and observe the trace as below:
+
+<img width="638" alt="Screenshot 2025-02-09 at 1 10 52 PM" src="assets/trace-example.png" />
+
+
 ##### Important information wrt context
 
 1. If you pass the context as nil, then context is set as `Background`

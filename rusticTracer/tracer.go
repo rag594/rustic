@@ -1,4 +1,4 @@
-package tracer
+package rusticTracer
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	stdoutTrace "go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
@@ -48,6 +49,7 @@ func InitTracer(serviceName, env string, exporter trace.SpanExporter) func() {
 	)
 
 	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.TraceContext{})
 
 	// Return function to shut down the tracer
 	return func() {

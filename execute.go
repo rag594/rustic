@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rag594/rustic/httpClient"
-	"github.com/rag594/rustic/tracer"
+	"github.com/rag594/rustic/rusticTracer"
 	"github.com/sony/gobreaker/v2"
 	otelTracer "go.opentelemetry.io/otel/trace"
 	"io"
@@ -115,7 +115,7 @@ func GET[Res any](ctx context.Context, url string, opts ...HTTPConfigOptions) (*
 
 	// if trace is enabled start trace using new context
 	if getOpts.HttpClient.TraceEnabled {
-		tr := tracer.GetTracer(getOpts.HttpClient.ServiceName)
+		tr := rusticTracer.GetTracer(getOpts.HttpClient.ServiceName)
 		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
@@ -133,7 +133,12 @@ func GET[Res any](ctx context.Context, url string, opts ...HTTPConfigOptions) (*
 	if err != nil {
 		return nil, errors.New("unable to create get request")
 	}
-	request.Header = getOpts.Headers
+
+	for key, value := range getOpts.Headers {
+		if len(value[0]) > 0 {
+			request.Header.Set(key, value[0])
+		}
+	}
 
 	if getOpts.CircuitBreaker != nil {
 		response, err := getOpts.CircuitBreaker.Execute(func() (any, error) {
@@ -218,7 +223,7 @@ func POST[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPC
 
 	// if trace is enabled start trace using new context
 	if postOpts.HttpClient.TraceEnabled {
-		tr := tracer.GetTracer(postOpts.HttpClient.ServiceName)
+		tr := rusticTracer.GetTracer(postOpts.HttpClient.ServiceName)
 		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
@@ -229,7 +234,12 @@ func POST[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPC
 	if err != nil {
 		return nil, errors.New("unable to create post request")
 	}
-	request.Header = postOpts.Headers
+
+	for key, value := range postOpts.Headers {
+		if len(value[0]) > 0 {
+			request.Header.Set(key, value[0])
+		}
+	}
 
 	if postOpts.CircuitBreaker != nil {
 		response, err := postOpts.CircuitBreaker.Execute(func() (any, error) {
@@ -314,7 +324,7 @@ func PUT[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPCo
 
 	// if trace is enabled start trace using new context
 	if putOpts.HttpClient.TraceEnabled {
-		tr := tracer.GetTracer(putOpts.HttpClient.ServiceName)
+		tr := rusticTracer.GetTracer(putOpts.HttpClient.ServiceName)
 		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
@@ -325,7 +335,12 @@ func PUT[Req, Res any](ctx context.Context, url string, req *Req, opts ...HTTPCo
 	if err != nil {
 		return nil, errors.New("unable to create Put request")
 	}
-	request.Header = putOpts.Headers
+
+	for key, value := range putOpts.Headers {
+		if len(value[0]) > 0 {
+			request.Header.Set(key, value[0])
+		}
+	}
 
 	response, err := putOpts.HttpClient.Do(request)
 	defer response.Body.Close()
@@ -386,7 +401,7 @@ func POSTFormData[Res any](ctx context.Context, url string, opts ...HTTPConfigOp
 
 	// if trace is enabled start trace using new context
 	if postOpts.HttpClient.TraceEnabled {
-		tr := tracer.GetTracer(postOpts.HttpClient.ServiceName)
+		tr := rusticTracer.GetTracer(postOpts.HttpClient.ServiceName)
 		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
@@ -395,7 +410,12 @@ func POSTFormData[Res any](ctx context.Context, url string, opts ...HTTPConfigOp
 	if err != nil {
 		return nil, errors.New("unable to create post request")
 	}
-	request.Header = postOpts.Headers
+
+	for key, value := range postOpts.Headers {
+		if len(value[0]) > 0 {
+			request.Header.Set(key, value[0])
+		}
+	}
 
 	response, err := postOpts.HttpClient.Do(request)
 	defer response.Body.Close()
@@ -454,7 +474,7 @@ func POSTMultiPartFormData[Res any](ctx context.Context, url string, files map[s
 
 	// if trace is enabled start trace using new context
 	if postOpts.HttpClient.TraceEnabled {
-		tr := tracer.GetTracer(postOpts.HttpClient.ServiceName)
+		tr := rusticTracer.GetTracer(postOpts.HttpClient.ServiceName)
 		newCtx, span = tr.Start(newCtx, httpClient.GetCallerFunctionName())
 		defer span.End()
 	}
@@ -494,7 +514,12 @@ func POSTMultiPartFormData[Res any](ctx context.Context, url string, files map[s
 	}
 
 	postOpts.Headers.Set("Content-Type", writer.FormDataContentType())
-	request.Header = postOpts.Headers
+
+	for key, value := range postOpts.Headers {
+		if len(value[0]) > 0 {
+			request.Header.Set(key, value[0])
+		}
+	}
 
 	response, err := postOpts.HttpClient.Do(request)
 	defer response.Body.Close()
