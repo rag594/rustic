@@ -3,6 +3,7 @@ module github.com/rag594/rustic
 go 1.22.0
 
 require (
+	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/sony/gobreaker/v2 v2.0.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0

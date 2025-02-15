@@ -6,12 +6,16 @@ Yet another HTTP Client in go with very simple yet essential features
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/rag594/rustic.svg)](https://pkg.go.dev/github.com/rag594/rustic)
 
-Features:
+### Features of HTTPClient
 - [x] http client with type safety
-- [x] Different http configurations support
-- [x] Configure timeouts, circuitBreaker etc
-- [x] supports open telemetry, currently with stdOut exporter(can be changed to http exported in order to collect with any telemetry backend)
+- [x] Different http configurations support - Timeout, Headers, QueryParams, FormParams, MultipartFormParams, CircuitBreaker
+- [x] Supports GET, POST, POSTMultiPartFormData, POSTFormData, PUT
+  - [ ] DELETE, PATCH
 - [ ] Add metrics either via open telemetry or prometheus metrics
+
+### Features of Tracing constructs
+- [x] supports opentelemetry - stdOut and OTLP Http exporter
+- [x] tracing middleware for echo v3 and v4
 
 > **_NOTE:_**  For circuit breaker https://github.com/sony/gobreaker is used.
 
@@ -31,6 +35,13 @@ type UserPost struct {
 	Title  string `json:"title"`
 	Body   string `json:"body"`
 }
+```
+
+Initialise tracer for HTTP client
+
+```go
+shutdown := rusticTracer.InitTracer("microserviceA", "dev", rusticTracer.StdOutExporter())
+defer shutdown()
 ```
 
 ```go
