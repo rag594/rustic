@@ -1,4 +1,4 @@
-## Rustic - A minimalistic HTTP client in Go
+## Rustic - A minimalistic library in Go for HTTP Client and tracing constructs
 
 Yet another HTTP Client in go with very simple yet essential features
 
@@ -26,6 +26,8 @@ go get github.com/rag594/rustic
 ```
 
 ### How to use it
+
+#### HTTP Client
 
 ```go
 // UserPost represents the post/blog by a specific user 
@@ -81,6 +83,8 @@ post, err := rustic.GET[[]UserPost](context.Background(),
 
     fmt.Println(post)
 ```
+
+#### Opentelementry Tracing
 
 ##### Using with Echo Framework
 
