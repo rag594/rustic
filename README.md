@@ -1,4 +1,4 @@
-## Rustic - A minimalistic HTTP client in Go
+## Rustic - A minimalistic library in Go for HTTP Client and tracing constructs
 
 Yet another HTTP Client in go with very simple yet essential features
 
