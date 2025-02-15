@@ -23,6 +23,8 @@ go get github.com/rag594/rustic
 
 ### How to use it
 
+#### HTTP Client
+
 ```go
 // UserPost represents the post/blog by a specific user 
 type UserPost struct {
@@ -70,6 +72,8 @@ post, err := rustic.GET[[]UserPost](context.Background(),
 
     fmt.Println(post)
 ```
+
+#### Opentelementry Tracing
 
 ##### Using with Echo Framework
 
