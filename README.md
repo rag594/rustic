@@ -12,6 +12,7 @@ Yet another HTTP Client in go with very simple yet essential features
 - [x] Supports GET, POST, POSTMultiPartFormData, POSTFormData, PUT
   - [ ] DELETE, PATCH
 - [ ] Add metrics either via open telemetry or prometheus metrics
+- [ ] Add support for retries, it should have either default/custom or without any retrier
 
 ### Features of Tracing constructs
 - [x] supports opentelemetry - stdOut and OTLP Http exporter
