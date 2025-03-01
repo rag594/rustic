@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	url2 "net/url"
+	"time"
+
 	"github.com/rag594/rustic"
 	"github.com/rag594/rustic/httpClient"
 	"github.com/rag594/rustic/rusticTracer"
 	"github.com/sony/gobreaker/v2"
-	url2 "net/url"
-	"time"
 )
 
 type UserPost struct {

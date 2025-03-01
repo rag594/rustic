@@ -3,6 +3,8 @@ package rusticTracer
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -12,7 +14,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 	otelTracer "go.opentelemetry.io/otel/trace"
-	"log"
 )
 
 // StdOutExporter outputs the traces to the stdout
