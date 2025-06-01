@@ -8,6 +8,7 @@ require (
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/rag594/rustic v0.0.0-00010101000000-000000000000
 	github.com/sony/gobreaker/v2 v2.1.0
+	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v1.34.0
 )
 
 require (

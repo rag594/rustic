@@ -11,7 +11,7 @@ Yet another HTTP Client in go with very simple yet essential features
 - [x] Different http configurations support - Timeout, Headers, QueryParams, FormParams, MultipartFormParams, CircuitBreaker
 - [x] Supports GET, POST, POSTMultiPartFormData, POSTFormData, PUT
   - [ ] DELETE, PATCH
-- [ ] Add metrics either via open telemetry or prometheus metrics
+- [x] Add metrics via OpenTelemetry
 - [ ] Add support for retries, it should have either default/custom or without any retrier
 
 ### Features of Tracing constructs
@@ -84,6 +84,51 @@ post, err := rustic.GET[[]UserPost](context.Background(),
 
     fmt.Println(post)
 ```
+
+#### HTTP Client OpenTelemetry Metrics
+
+The HTTP client can be configured to emit OpenTelemetry metrics, allowing you to monitor its performance and behavior, such as request counts, durations, and errors.
+
+##### Enabling Metrics
+
+To enable metrics collection, use the `WithMetricsEnabled` option when creating a new `HTTPClient`:
+
+```go
+import (
+	"learn-go-dependency-injection/httpClient" // Or your actual import path
+	// ... other necessary imports for metrics exporter
+)
+
+// Example: Create a client with metrics enabled
+client := httpClient.NewHTTPClient(
+    httpClient.WithMetricsEnabled(true),
+    // You might also want to enable tracing or other options
+    // httpClient.WithTraceEnabled(true),
+)
+
+// Now, when client.Do is called, metrics will be recorded.
+```
+
+##### Collected Metrics
+
+When enabled, the client records the following metrics:
+
+*   **`http.client.request.count`** (Counter): The total number of HTTP requests made.
+    *   Attributes: `http.method`, `http.url`, `http.status_code` (if a response is received).
+*   **`http.client.request.duration`** (Histogram): The duration of each HTTP request in seconds.
+    *   Attributes: `http.method`, `http.url`, `http.status_code` (if a response is received).
+*   **`http.client.request.errors`** (Counter): The number of HTTP requests that resulted in an error during the request execution (e.g., network errors, dial errors). This does not count HTTP status codes like 4xx or 5xx as errors for this specific metric unless the `Do` method itself returns an error.
+    *   Attributes: `http.method`, `http.url`.
+
+##### Setting up an Exporter
+
+To actually collect and visualize these metrics, you need to configure an OpenTelemetry metrics exporter and a `MeterProvider` in your application. This setup is standard for OpenTelemetry.
+
+For a practical example of how to set up a simple stdout exporter (which prints metrics to the console), please refer to the example program:
+[`example/httpMetrics/main.go`](./example/httpMetrics/main.go)
+
+This example demonstrates initializing the exporter and making it available for the `HTTPClient` to use. You can replace the stdout exporter with other exporters like Prometheus, OTLP, etc., depending on your monitoring infrastructure.
+
 
 #### Opentelementry Tracing
 
