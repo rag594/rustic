@@ -10,6 +10,43 @@ import (
 	"time"
 )
 
+// MetricType defines the type of an OpenTelemetry metric.
+type MetricType string
+
+const (
+	// Int64Counter is a metric type for a counter that records int64 values.
+	Int64Counter MetricType = "Int64Counter"
+	// Float64Histogram is a metric type for a histogram that records float64 values.
+	Float64Histogram MetricType = "Float64Histogram"
+	// Add other types as needed, e.g., Int64UpDownCounter, Float64Gauge, etc.
+)
+
+// MetricConfig defines the configuration for an OpenTelemetry metric.
+type MetricConfig struct {
+	Name        string
+	Description string
+	Type        MetricType
+	// Future additions could include Unit, specific advice for histogram boundaries, etc.
+}
+
+var defaultMetricConfigs = []MetricConfig{
+	{
+		Name:        "http.client.request.count",
+		Description: "The total number of HTTP requests made by the client.",
+		Type:        Int64Counter,
+	},
+	{
+		Name:        "http.client.request.duration",
+		Description: "The duration of HTTP requests made by the client, in seconds.",
+		Type:        Float64Histogram,
+	},
+	{
+		Name:        "http.client.request.errors",
+		Description: "The number of HTTP requests by the client that resulted in an error (e.g., network errors).",
+		Type:        Int64Counter,
+	},
+}
+
 // HTTPClient wrapper over net/http client with tracing
 type HTTPClient struct {
 	Client           *http.Client
@@ -17,9 +54,7 @@ type HTTPClient struct {
 	MetricsEnabled   bool // Added MetricsEnabled field
 	ServiceName      string
 	meter            metric.Meter
-	requestCount     metric.Int64Counter
-	requestDuration  metric.Float64Histogram
-	requestErrors    metric.Int64Counter
+	instruments      map[string]any // Stores initialized metric instruments
 }
 
 // HTTPClientOption different options to configure the HTTPClient
@@ -56,11 +91,29 @@ func NewHTTPClient(opt ...HTTPClientOption) *HTTPClient {
 	if httpClient.MetricsEnabled {
 		// Initialize meter
 		httpClient.meter = otel.Meter("httpClient")
+		httpClient.instruments = make(map[string]any)
 
-		// Define metrics
-		httpClient.requestCount = metric.Must(httpClient.meter).Int64Counter("http.client.request.count")
-		httpClient.requestDuration = metric.Must(httpClient.meter).Float64Histogram("http.client.request.duration")
-		httpClient.requestErrors = metric.Must(httpClient.meter).Int64Counter("http.client.request.errors")
+		// Initialize instruments based on defaultMetricConfigs
+		for _, config := range defaultMetricConfigs {
+			switch config.Type {
+			case Int64Counter:
+				instrument := metric.Must(httpClient.meter).Int64Counter(
+					config.Name,
+					metric.WithDescription(config.Description),
+				)
+				httpClient.instruments[config.Name] = instrument
+			case Float64Histogram:
+				instrument := metric.Must(httpClient.meter).Float64Histogram(
+					config.Name,
+					metric.WithDescription(config.Description),
+				)
+				httpClient.instruments[config.Name] = instrument
+				// Add cases for other metric types if they are defined in MetricType
+			default:
+				// Optionally log or handle unknown metric types
+				// For now, we'll ignore unknown types to avoid panicking if defaultMetricConfigs is extended with unsupported types.
+			}
+		}
 	}
 
 	return &httpClient
@@ -83,26 +136,40 @@ func (c *HTTPClient) Do(request *http.Request) (*http.Response, error) {
 		attributes = append(attributes, attribute.Int("http.status_code", resp.StatusCode))
 	}
 
-	if c.MetricsEnabled && c.meter != nil { // Check if metrics are enabled and meter is initialized
-		if c.requestDuration != nil {
-			c.requestDuration.Record(request.Context(), duration, metric.WithAttributes(attributes...))
+	// Record metrics if enabled and instruments are available
+	if c.MetricsEnabled && c.instruments != nil && c.meter != nil {
+		// Record duration
+		if inst, ok := c.instruments["http.client.request.duration"]; ok {
+			if histogram, typeOk := inst.(metric.Float64Histogram); typeOk {
+				histogram.Record(request.Context(), duration, metric.WithAttributes(attributes...))
+			}
 		}
-		if c.requestCount != nil {
-			c.requestCount.Add(request.Context(), 1, metric.WithAttributes(attributes...))
+
+		// Record count
+		if inst, ok := c.instruments["http.client.request.count"]; ok {
+			if counter, typeOk := inst.(metric.Int64Counter); typeOk {
+				counter.Add(request.Context(), 1, metric.WithAttributes(attributes...))
+			}
 		}
 
 		if err != nil {
-			if c.requestErrors != nil {
-				// Create a separate attribute set for errors to avoid adding status_code if resp is nil
-				errorAttributes := []attribute.KeyValue{
-					attribute.String("http.method", request.Method),
-					attribute.String("http.url", request.URL.String()),
+			// Record error count
+			if inst, ok := c.instruments["http.client.request.errors"]; ok {
+				if counter, typeOk := inst.(metric.Int64Counter); typeOk {
+					// For errors, attributes should not include http.status_code if resp is nil
+					errorAttributes := []attribute.KeyValue{
+						attribute.String("http.method", request.Method),
+						attribute.String("http.url", request.URL.String()),
+					}
+					// If resp is not nil (e.g. a 500 error from server still means Do itself didn't error yet),
+					// we might want to include status code. However, this block is specifically for `err != nil`,
+					// which implies a client-side error or an error before getting a full response.
+					counter.Add(request.Context(), 1, metric.WithAttributes(errorAttributes...))
 				}
-				c.requestErrors.Add(request.Context(), 1, metric.WithAttributes(errorAttributes...))
 			}
 			return nil, err // Return error after attempting to record it
 		}
-	} else if err != nil { // If metrics are not enabled, but there's an error, still return the error
+	} else if err != nil { // If metrics are not enabled (or instruments map is nil), but there's an error, still return the error
 		return nil, err
 	}
 
