@@ -92,14 +92,41 @@ post, err := rustic.GET[[]UserPost](context.Background(),
 Initialise the trace with service name, environment and exporter()below is an OTLP exporter with configured telemetry backend. That's it, you have configured the traces
 ```go
 // you can try out with tracer.StdOutExporter() in your localhost
-	shutdown := rusticTracer.InitTracer("userService", "dev", rusticTracer.OTLPExporter("localhost", "4318"))
+	shutdown := rusticTracer.InitTracer("userService", "dev", rusticTracer.OTLPExporter("localhost", "4318", nil))
 
 	defer shutdown()
 	e.Use(rusticTracer.Echov4TracerMiddleware("userService"))
 ```
+
+##### OTLP Exporter with Custom Headers
+
+For telemetry backends that require authentication (e.g., Grafana Cloud, Honeycomb), you can pass custom headers:
+```go
+// Define custom headers for OTLP exporter
+headers := map[string]string{
+    "Authorization": "Bearer <your-api-token>",
+}
+
+// Initialize tracer with OTLP exporter using custom headers
+shutdown := rusticTracer.InitTracer("microserviceA", "dev", rusticTracer.OTLPExporter("localhost", "4318", headers))
+defer shutdown()
+
+client := httpClient.NewHTTPClient(httpClient.WithTraceEnabled(true))
+
+url := "https://jsonplaceholder.typicode.com/posts"
+post, err := rustic.POST[UserPostReq, UserPostResp](context.Background(),
+    url,
+    userPostReq,
+    rustic.WithHttpClient(client),
+    rustic.WithTimeout(time.Duration(1)*time.Minute),
+)
+```
+
+You can run the sample under `example/otlpWithHeaders` to see this in action.
+
 You can run the sample under `example/echoTraceMiddleware` and observe the trace as below:
 
-<img width="638" alt="Screenshot 2025-02-09 at 1 10 52 PM" src="assets/trace-example.png" />
+<img width="638" alt="Screenshot 2025-02-09 at 1 10 52 PM" src="assets/trace-example.png" />
 
 
 ##### Important information wrt context

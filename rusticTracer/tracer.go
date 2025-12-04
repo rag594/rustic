@@ -28,9 +28,14 @@ func StdOutExporter() *stdoutTrace.Exporter {
 }
 
 // OTLPExporter Uses OpenTelemetry’s standard OTLP/gRPC or HTTP with host/port
-func OTLPExporter(host, port string) *otlptrace.Exporter {
+func OTLPExporter(host, port string, headers map[string]string) *otlptrace.Exporter {
 	// Create an OTLP exporter (send data to OpenTelemetry collector)
-	oltpExporter, err := otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure(), otlptracehttp.WithEndpoint(fmt.Sprintf("%s:%s", host, port)))
+	oltpExporter, err := otlptracehttp.New(
+		context.Background(),
+		otlptracehttp.WithInsecure(),
+		otlptracehttp.WithEndpoint(fmt.Sprintf("%s:%s", host, port)),
+		otlptracehttp.WithHeaders(headers),
+	)
 	if err != nil {
 		log.Fatalf("failed to create exporter: %v", err)
 	}

@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/rag594/rustic"
 	"github.com/rag594/rustic/httpClient"
 	"github.com/rag594/rustic/rusticTracer"
-	"net/http"
-	"time"
 )
 
 type UserPostReq struct {
@@ -26,7 +27,7 @@ type UserPostResp struct {
 func main() {
 	e := echo.New()
 	// you can try out with tracer.StdOutExporter() in your localhost
-	shutdown := rusticTracer.InitTracer("userService", "dev", rusticTracer.OTLPExporter("localhost", "4318"))
+	shutdown := rusticTracer.InitTracer("userService", "dev", rusticTracer.OTLPExporter("localhost", "4318", nil))
 
 	defer shutdown()
 	e.Use(rusticTracer.Echov4TracerMiddleware("userService"))
