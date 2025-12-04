@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/rag594/rustic"
 	"github.com/rag594/rustic/httpClient"
+	"github.com/rag594/rustic/middleware/echov4"
 	"github.com/rag594/rustic/rusticTracer"
 )
 
@@ -30,7 +31,7 @@ func main() {
 	shutdown := rusticTracer.InitTracer("userService", "dev", rusticTracer.OTLPExporter("localhost", "4318", nil))
 
 	defer shutdown()
-	e.Use(rusticTracer.Echov4TracerMiddleware("userService"))
+	e.Use(echov4.TracerMiddleware("userService"))
 	client := httpClient.NewHTTPClient(httpClient.WithTraceEnabled(true))
 	e.POST("/user/:user_id/post", func(c echo.Context) error {
 

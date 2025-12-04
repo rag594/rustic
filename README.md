@@ -16,7 +16,7 @@ Yet another HTTP Client in go with very simple yet essential features
 
 ### Features of Tracing constructs
 - [x] supports opentelemetry - stdOut and OTLP Http exporter
-- [x] tracing middleware for echo v3 and v4
+- [x] tracing middleware for echo v3 and v4 (separate packages to avoid unnecessary deps)
 
 > **_NOTE:_**  For circuit breaker https://github.com/sony/gobreaker is used.
 
@@ -91,11 +91,16 @@ post, err := rustic.GET[[]UserPost](context.Background(),
 
 Initialise the trace with service name, environment and exporter()below is an OTLP exporter with configured telemetry backend. That's it, you have configured the traces
 ```go
-// you can try out with tracer.StdOutExporter() in your localhost
-	shutdown := rusticTracer.InitTracer("userService", "dev", rusticTracer.OTLPExporter("localhost", "4318", nil))
+import (
+    "github.com/rag594/rustic/middleware/echov4" // or echov3 for Echo v3
+    "github.com/rag594/rustic/rusticTracer"
+)
 
-	defer shutdown()
-	e.Use(rusticTracer.Echov4TracerMiddleware("userService"))
+// you can try out with tracer.StdOutExporter() in your localhost
+shutdown := rusticTracer.InitTracer("userService", "dev", rusticTracer.OTLPExporter("localhost", "4318", nil))
+
+defer shutdown()
+e.Use(echov4.TracerMiddleware("userService"))
 ```
 
 ##### OTLP Exporter with Custom Headers

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/rag594/rustic/middleware/echov4"
 	"github.com/rag594/rustic/rusticTracer"
 )
 
@@ -22,7 +23,7 @@ type UserPostResp struct {
 
 func main() {
 	e := echo.New()
-	e.Use(rusticTracer.Echov4TracerMiddleware("postService"))
+	e.Use(echov4.TracerMiddleware("postService"))
 	shutdown := rusticTracer.InitTracer("postService", "dev", rusticTracer.OTLPExporter("localhost", "4318", nil))
 	defer shutdown()
 	e.POST("/create-post", func(c echo.Context) error {

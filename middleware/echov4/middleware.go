@@ -1,4 +1,4 @@
-package rusticTracer
+package echov4
 
 import (
 	"github.com/labstack/echo/v4"
@@ -8,8 +8,8 @@ import (
 	otelTracer "go.opentelemetry.io/otel/trace"
 )
 
-// Echov4TracerMiddleware extracts and injects the trace for incoming HTTP requests to be propagated forward
-func Echov4TracerMiddleware(service string) echo.MiddlewareFunc {
+// TracerMiddleware extracts and injects the trace for incoming HTTP requests to be propagated forward
+func TracerMiddleware(service string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Get global tracer and propagator
