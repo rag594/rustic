@@ -1,9 +1,10 @@
 package httpClient
 
 import (
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"net/http"
 	"runtime"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // HTTPClient wrapper over net/http client with tracing

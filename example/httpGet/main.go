@@ -6,7 +6,6 @@ import (
 	url2 "net/url"
 	"time"
 
-	"github.com/rag594/rustic"
 	"github.com/rag594/rustic/httpClient"
 	"github.com/rag594/rustic/rusticTracer"
 	"github.com/sony/gobreaker/v2"
@@ -44,12 +43,12 @@ func main() {
 	cb := gobreaker.NewCircuitBreaker[any](*st)
 
 	for i := 0; i < 10; i++ {
-		post, err := rustic.GET[[]UserPost](context.Background(),
+		post, err := httpClient.GET[[]UserPost](context.Background(),
 			url,
-			rustic.WithQueryParams(params),
-			rustic.WithHttpClient(client),
-			rustic.WithTimeout(time.Duration(1)*time.Second),
-			rustic.WithCircuitBreaker(cb),
+			httpClient.WithQueryParams(params),
+			httpClient.WithHttpClient(client),
+			httpClient.WithTimeout(time.Duration(1)*time.Second),
+			httpClient.WithCircuitBreaker(cb),
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -60,11 +59,11 @@ func main() {
 
 	// Without CircuitBreaker
 	newUrl := "https://jsonplaceholder.typicode.com/posts"
-	post, err := rustic.GET[[]UserPost](context.Background(),
+	post, err := httpClient.GET[[]UserPost](context.Background(),
 		newUrl,
-		rustic.WithQueryParams(params),
-		rustic.WithHttpClient(client),
-		rustic.WithTimeout(time.Duration(1)*time.Second),
+		httpClient.WithQueryParams(params),
+		httpClient.WithHttpClient(client),
+		httpClient.WithTimeout(time.Duration(1)*time.Second),
 	)
 	if err != nil {
 		fmt.Println(err)
