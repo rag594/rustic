@@ -6,6 +6,32 @@ Yet another HTTP Client in go with very simple yet essential features
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/rag594/rustic.svg)](https://pkg.go.dev/github.com/rag594/rustic)
 
+### Package Structure
+
+This project is organized as a **multi-module Go workspace** to prevent unnecessary dependencies and provide clean separation of concerns:
+
+```
+rustic/
+├── httpClient/           # HTTP client with type safety and circuit breaker support
+├── rusticTracer/         # Core OpenTelemetry tracing functionality
+├── middleware/
+│   ├── echov3/          # Echo v3 tracing middleware (separate module)
+│   └── echov4/          # Echo v4 tracing middleware (separate module)
+└── example/             # Example applications demonstrating usage
+    ├── httpGet/
+    ├── httpPost/
+    ├── httpPut/
+    ├── otlpWithHeaders/
+    └── echoTraceMiddleware/
+        ├── userService/
+        └── postService/
+```
+
+**Key Design Principles:**
+- **Isolated Dependencies**: Framework-specific middleware (Echo v3/v4) are separate modules, so users only pull Echo dependencies when explicitly needed
+- **Modular Architecture**: Each package (`httpClient`, `rusticTracer`, `middleware/echov3`, `middleware/echov4`) is an independent Go module with its own `go.mod`
+- **Example Applications**: Complete working examples demonstrate integration patterns
+
 ### Features of HTTPClient
 - [x] http client with type safety
 - [x] Different http configurations support - Timeout, Headers, QueryParams, FormParams, MultipartFormParams, CircuitBreaker
@@ -20,11 +46,41 @@ Yet another HTTP Client in go with very simple yet essential features
 
 > **_NOTE:_**  For circuit breaker https://github.com/sony/gobreaker is used.
 
-### Usage
+### Installation
+
+Install only the modules you need:
+
+#### HTTP Client Module
 
 ```shell
-go get github.com/rag594/rustic
+go get github.com/rag594/rustic/httpClient
 ```
+
+This module provides the HTTP client with type safety, circuit breaker support, and integrated tracing.
+
+#### Tracing Module
+
+```shell
+go get github.com/rag594/rustic/rusticTracer
+```
+
+Core OpenTelemetry tracing functionality with StdOut and OTLP exporters.
+
+#### Echo Middleware (Optional)
+
+Only install if you're using the Echo framework:
+
+**For Echo v4:**
+```shell
+go get github.com/rag594/rustic/middleware/echov4
+```
+
+**For Echo v3:**
+```shell
+go get github.com/rag594/rustic/middleware/echov3
+```
+
+These middleware packages are separate modules, so Echo dependencies are only pulled when explicitly needed.
 
 ### How to use it
 
